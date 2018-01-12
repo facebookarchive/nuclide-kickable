@@ -10,7 +10,22 @@ They are heavily oriented at performance and simplicity of use.
 
 This is a Java language implementation of this concept.
 
-# Logging
+# Building
+
+The (OSS version of the) project is built with Maven:
+```
+mvn package
+```
+
+# Contributing
+
+See the CONTRIBUTING.md file for how to help out.
+
+## License
+
+nuclide-kickable is MIT-licensed.
+
+# Logging/TODO
 
 The Kickable library comes with its wrapper for `java.util.logging` classes. It logs on the global logger.
 
