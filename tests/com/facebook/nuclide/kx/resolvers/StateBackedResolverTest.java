@@ -260,6 +260,7 @@ public class StateBackedResolverTest {
     test.assertValue("ghi");
   }
 
+  @org.junit.Ignore
   @Test
   public void testInvalidateAll() {
     TestResolver<String, String> resolver = new TestResolver<>();
