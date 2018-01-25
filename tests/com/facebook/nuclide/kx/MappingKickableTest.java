@@ -49,6 +49,7 @@ public class MappingKickableTest {
     kickTester.assertValue("abc");
   }
 
+  @org.junit.Ignore // Seems to be flaky in Sandcastle.
   @SuppressWarnings("unchecked")
   @Test
   public void testKickAfterInvalidation() throws Exception {
