@@ -33,7 +33,6 @@ public class SwitchMappingKickableTest {
     tester.assertValueEquals("def");
   }
 
-  @org.junit.Ignore
   @Test
   public void testSourceInvalidation() {
     TestScheduler scheduler = new TestScheduler();
