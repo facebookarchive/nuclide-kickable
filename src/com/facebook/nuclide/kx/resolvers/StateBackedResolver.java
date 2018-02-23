@@ -107,13 +107,22 @@ public abstract class StateBackedResolver<K, S, T> {
   private final PublishSubject<StateUpdate<K, S>> stateUpdates = PublishSubject.create();
 
   private final Optional<? extends CacheManager<K, S>> cacheManager;
+  private final Optional<? extends ResolverTimer> timer;
 
   public StateBackedResolver() {
-    this(Optional.empty());
+    this(Optional.empty(), Optional.empty());
   }
 
   public StateBackedResolver(CacheManager<K, S> cacheManager) {
-    this(Optional.of(cacheManager));
+    this(Optional.of(cacheManager), Optional.empty());
+  }
+
+  public StateBackedResolver(ResolverTimer timer) {
+    this(Optional.empty(), Optional.of(timer));
+  }
+
+  public StateBackedResolver(CacheManager<K, S> cacheManager, ResolverTimer timer) {
+    this(Optional.of(cacheManager), Optional.of(timer));
   }
 
   // Implementation remarks.
@@ -130,7 +139,9 @@ public abstract class StateBackedResolver<K, S, T> {
   // stream. Which is then mapped to the actual updates depending on the state (stateMap) at the
   // time of the handling of each request (rather than at the time of the respective method
   // invocation).
-  public StateBackedResolver(Optional<? extends CacheManager<K, S>> cacheManager) {
+  public StateBackedResolver(
+      Optional<? extends CacheManager<K, S>> cacheManager,
+      Optional<? extends ResolverTimer> timer) {
     mutationRequests
         .serialize()
         .flatMapIterable(mutation -> mutation.toActualUpdates(stateMap, StateBackedResolver.this))
@@ -154,6 +165,8 @@ public abstract class StateBackedResolver<K, S, T> {
                 }
               });
         });
+
+    this.timer = timer;
   }
 
   public synchronized Kickable<T> resolve(K key) {
@@ -169,8 +182,10 @@ public abstract class StateBackedResolver<K, S, T> {
             .doFinally(() -> removeKickable(key)) // Separate function for an easier synchonization
             .setDebugKey(this.getClass().getSimpleName() + " " + key.toString());
 
-    kickablesMap.put(key, built);
-    return built;
+    Kickable<T> kickable = timer.map(t -> t.timeKickable(built)).orElse(built);
+
+    kickablesMap.put(key, kickable);
+    return kickable;
   }
 
   /** Mostly meant for testing. Allows overriding the scheduler used for lifecycles. */
@@ -189,8 +204,10 @@ public abstract class StateBackedResolver<K, S, T> {
                 scheduler) // Separate function for an easier synchonization
             .setDebugKey(this.getClass().getSimpleName() + " " + key.toString());
 
-    kickablesMap.put(key, built);
-    return built;
+    Kickable<T> kickable = timer.map(t -> t.timeKickable(built)).orElse(built);
+
+    kickablesMap.put(key, kickable);
+    return kickable;
   }
 
   private synchronized void removeKickable(K key) {

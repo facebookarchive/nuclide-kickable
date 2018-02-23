@@ -21,6 +21,10 @@ public abstract class KickableResolver<K, T> {
     this(Optional.empty());
   }
 
+  protected KickableResolver(ResolverTimer timer) {
+    this(Optional.of(timer));
+  }
+
   protected KickableResolver(Optional<? extends ResolverTimer> timer) {
     this.timer = timer;
   }
@@ -37,7 +41,7 @@ public abstract class KickableResolver<K, T> {
           () -> {
             Kickable<T> built =
                 build(key).setDebugKey(this.getClass().getSimpleName() + " " + keyToString(key));
-            Kickable<T> kickable = timer.map(t -> t.timeKickable(built)).orElseGet(() -> built);
+            Kickable<T> kickable = timer.map(t -> t.timeKickable(built)).orElse(built);
             return kickable.doFinally(() -> cache.invalidate(key));
           });
     } catch (ExecutionException e) {
