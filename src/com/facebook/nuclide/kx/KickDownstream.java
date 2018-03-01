@@ -112,6 +112,7 @@ class KickDownstream<T> extends KickableImpl<T, KickDownstream<T>.State> {
       // Upstream has a value -- we need to emit it to the subject and remember that we've emitted
       // it
       subject.onNext(nextState.setValue(upstreamValue.get()));
+      nextState.setCompleted();
     } else {
       // We have emitted a value before. If the upstream value is not (referentially) identical to
       // what we have emitted or if it has invalidated it is a sign for us to invalidate.
